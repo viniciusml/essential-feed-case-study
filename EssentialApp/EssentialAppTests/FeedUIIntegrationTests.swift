@@ -15,7 +15,7 @@ final class FeedUIIntegrationTests: XCTestCase {
 		
 		sut.loadViewIfNeeded()
 		
-		XCTAssertEqual(sut.title, localized("FEED_VIEW_TITLE"))
+		XCTAssertEqual(sut.title, feedTitle)
 	}
 	
 	func test_loadFeedActions_requestFeedFromLoader() {
@@ -100,11 +100,24 @@ final class FeedUIIntegrationTests: XCTestCase {
 		XCTAssertEqual(sut.errorMessage, nil)
 		
 		loader.completeFeedLoadingWithError(at: 0)
-		XCTAssertEqual(sut.errorMessage, localized("FEED_VIEW_CONNECTION_ERROR"))
+		XCTAssertEqual(sut.errorMessage, loadError)
 		
 		sut.simulateUserInitiatedFeedReload()
 		XCTAssertEqual(sut.errorMessage, nil)
 	}
+    
+    func test_tapOnErrorView_hidesErrorMessage() {
+        let (sut, loader) = makeSUT()
+        
+        sut.loadViewIfNeeded()
+        XCTAssertEqual(sut.errorMessage, nil)
+        
+        loader.completeFeedLoadingWithError(at: 0)
+        XCTAssertEqual(sut.errorMessage, loadError)
+        
+        sut.simulateErrorViewTap()
+        XCTAssertEqual(sut.errorMessage, nil)
+    }
 
 	func test_feedImageView_loadsImageURLWhenVisible() {
 		let image0 = makeImage(url: URL(string: "http://url-0.com")!)
@@ -319,7 +332,7 @@ final class FeedUIIntegrationTests: XCTestCase {
 	
 	// MARK: - Helpers
 	
-	private func makeSUT(file: StaticString = #file, line: UInt = #line) -> (sut: FeedViewController, loader: LoaderSpy) {
+	private func makeSUT(file: StaticString = #filePath, line: UInt = #line) -> (sut: ListViewController, loader: LoaderSpy) {
 		let loader = LoaderSpy()
         let sut = FeedUIComposer.feedComposedWith(feedLoader: loader.loadPublisher, imageLoader: loader.loadImageDataPublisher)
 		trackForMemoryLeaks(loader, file: file, line: line)
